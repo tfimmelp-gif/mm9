@@ -1,0 +1,26 @@
+{
+  "name": "mm9",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "express": "^4.21.2",
+    "node-fetch": "^3.3.2"
+  },
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tfimmelp-gif/mm9.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/tfimmelp-gif/mm9/issues"
+  },
+  "homepage": "https://github.com/tfimmelp-gif/mm9#readme"
+}

